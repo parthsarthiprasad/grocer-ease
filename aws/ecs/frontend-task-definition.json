@@ -1,0 +1,36 @@
+{
+    "family": "grocer-ease-frontend",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::${AWS::AccountId}:role/ecsTaskRole",
+    "containerDefinitions": [
+        {
+            "name": "grocer-ease-frontend",
+            "image": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/grocer-ease-frontend:latest",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "REACT_APP_API_URL",
+                    "value": "http://${LoadBalancer.DNSName}/api"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/grocer-ease-frontend",
+                    "awslogs-region": "${AWS::Region}",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
+} 
