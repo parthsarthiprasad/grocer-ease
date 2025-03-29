@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 const userSchema = mongoose.Schema(
   {
@@ -86,22 +86,16 @@ const userSchema = mongoose.Schema(
   }
 );
 //pass hash
-userSchema.pre('save', function (next) {
-  if (!this.isModified('password')) {
-    //  only run if password is modified, otherwise it will change every time we save the user!
-    return next();
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
   }
-  const password = this.password;
-
-  const hashedPassword = bcrypt.hashSync(password);
-  this.password = hashedPassword;
   this.confirmPassword = undefined;
   next();
 });
 
-userSchema.methods.comparePassword = function (password, hash) {
-  const isPasswordValid = bcrypt.compareSync(password, hash);
-  return isPasswordValid;
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 userSchema.methods.generateConfirmationToken = function () {
